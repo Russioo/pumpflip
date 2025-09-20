@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { solanaService } from '@/lib/solana';
+import { tokenHolderService } from '@/lib/tokenHolders';
 
 const bodySchema = z.object({
   wallet: z.string().min(32).max(44), // Solana addresses are 32-44 chars
@@ -14,11 +15,21 @@ async function holdsPumpflipToken(wallet: string): Promise<{ hasTokens: boolean;
     return { hasTokens: false, balance: 0 };
   }
 
-  // Use demo for now - replace with real check when you have the token mint address
-  return await solanaService.checkPumpFlipBalanceDemo(wallet);
-  
-  // For production, use this:
-  // return await solanaService.checkPumpFlipBalance(wallet);
+  try {
+    console.log(`🔍 Checking token balance for wallet: ${wallet}`);
+    
+    // Brug den nye token holder service til at scrape rigtige data
+    const result = await tokenHolderService.checkWalletBalance(wallet);
+    
+    console.log(`✅ Wallet ${wallet} - Has tokens: ${result.hasTokens}, Balance: ${result.balance}`);
+    
+    return result;
+  } catch (error) {
+    console.error('❌ Token balance check failed:', error);
+    
+    // Fallback til demo data hvis scraping fejler
+    return await solanaService.checkPumpFlipBalanceDemo(wallet);
+  }
 }
 
 export async function POST(req: Request) {

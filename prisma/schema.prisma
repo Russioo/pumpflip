@@ -32,6 +32,7 @@ model Choice {
   walletId  String
   roundId   String
   side      String
+  position  Int      // Spillerens position i runden (1-100)
   createdAt DateTime @default(now())
   wallet    Wallet   @relation(fields: [walletId], references: [id])
   round     Round    @relation(fields: [roundId], references: [id])

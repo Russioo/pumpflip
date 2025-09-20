@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 
 type Stats = {
   ok: boolean;
-  heads: number;
-  tails: number;
+  totalPlayers: number;
+  positions1to50: number;
+  positions51to100: number;
   feePool: number;
-  recent: { index: number; result: string | null }[];
+  recent: { index: number; result: string | null; totalPlayers: number; winningPositions: string }[];
 };
 
 export function LiveStatsCards({ nextFlipAt }: { nextFlipAt: number }) {
@@ -31,23 +32,29 @@ export function LiveStatsCards({ nextFlipAt }: { nextFlipAt: number }) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       <div className="text-center group">
-        <div className="text-sm text-gray-400 mb-2 group-hover:text-gray-300 transition-colors duration-300">Players</div>
+        <div className="text-sm text-gray-400 mb-2 group-hover:text-gray-300 transition-colors duration-300">Spillere i runde</div>
         <div className="text-3xl font-bold text-pump-green group-hover:scale-110 transition-transform duration-300">
-          {stats?.heads ?? 0} <span className="text-gray-500">vs</span> {stats?.tails ?? 0}
+          {stats?.totalPlayers ?? 0}<span className="text-lg text-gray-500">/100</span>
         </div>
-        <div className="text-sm text-gray-400 mt-1 group-hover:text-gray-300 transition-colors duration-300">HEADS vs TAILS</div>
+        <div className="text-xs text-gray-400 mt-1 space-y-1">
+          <div>Pos 1-50: {stats?.positions1to50 ?? 0}</div>
+          <div>Pos 51-100: {stats?.positions51to100 ?? 0}</div>
+        </div>
       </div>
       <div className="text-center group">
-        <div className="text-sm text-gray-400 mb-2 group-hover:text-gray-300 transition-colors duration-300">Fee Pool</div>
+        <div className="text-sm text-gray-400 mb-2 group-hover:text-gray-300 transition-colors duration-300">Prize Pool</div>
         <div className="text-3xl font-bold text-pump-green group-hover:scale-110 transition-transform duration-300">{(stats?.feePool ?? 0).toFixed(2)}</div>
-        <div className="text-sm text-gray-400 mt-1 group-hover:text-gray-300 transition-colors duration-300">Total rewards</div>
+        <div className="text-sm text-gray-400 mt-1 group-hover:text-gray-300 transition-colors duration-300">$PUMPFLIP tokens</div>
       </div>
       <div className="text-center group">
-        <div className="text-sm text-gray-400 mb-2 group-hover:text-gray-300 transition-colors duration-300">Last winners</div>
+        <div className="text-sm text-gray-400 mb-2 group-hover:text-gray-300 transition-colors duration-300">Sidste resultater</div>
         <div className="text-lg font-bold text-pump-green group-hover:scale-110 transition-transform duration-300">
           {(stats?.recent ?? []).length === 0 && <div>-</div>}
           {(stats?.recent ?? []).slice(0, 3).map(r => (
-            <div key={r.index} className="text-sm animate-fade-in">{r.result ?? '-'}</div>
+            <div key={r.index} className="text-sm animate-fade-in space-y-1">
+              <div className="font-bold">{r.result ?? '-'}</div>
+              <div className="text-xs text-gray-400">Pos {r.winningPositions}</div>
+            </div>
           ))}
         </div>
       </div>

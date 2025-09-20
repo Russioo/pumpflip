@@ -25,12 +25,24 @@ export async function POST() {
     return NextResponse.json({ ok: true, alreadySettled: true, index: round.index, result: round.result });
   }
 
-  const choices = await prisma.choice.findMany({ where: { roundId: round.id } });
-  const headsCount = choices.filter(c => c.side === 'HEADS').length;
-  const tailsCount = choices.filter(c => c.side === 'TAILS').length;
+  const choices = await prisma.choice.findMany({ 
+    where: { roundId: round.id },
+    orderBy: { position: 'asc' }
+  });
+  
+  const totalPlayers = choices.length;
 
   const result = Math.random() < 0.5 ? 'HEADS' : 'TAILS';
-  const winners = choices.filter(c => c.side === result);
+  
+  // New winning logic: position-based winners
+  let winners: typeof choices = [];
+  if (result === 'HEADS') {
+    // Top 1-50 players win on HEADS
+    winners = choices.filter(c => c.position <= 50);
+  } else {
+    // Players 51-100 win on TAILS
+    winners = choices.filter(c => c.position >= 51 && c.position <= 100);
+  }
 
   // For demo: static fee pool amount per round, e.g., 10.00
   const feePool = 10.0;
@@ -50,7 +62,16 @@ export async function POST() {
     }
   });
 
-  return NextResponse.json({ ok: true, index, result, headsCount, tailsCount, feePool, perWinner });
+  return NextResponse.json({ 
+    ok: true, 
+    index, 
+    result, 
+    totalPlayers,
+    winnersCount: winners.length,
+    feePool, 
+    perWinner,
+    winningPositions: result === 'HEADS' ? '1-50' : '51-100'
+  });
 }
 
 

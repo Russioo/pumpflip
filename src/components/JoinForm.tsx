@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import { CheckCircle, Target, Coins, Loader2 } from "lucide-react";
 
 type VerifyResponse = { ok: boolean; eligible?: boolean; walletId?: string; error?: string; message?: string; balance?: number };
-type JoinResponse = { ok: boolean; roundIndex?: number; endsAt?: string; error?: string };
+type JoinResponse = { ok: boolean; roundIndex?: number; endsAt?: string; error?: string; position?: number; winCondition?: string };
 
 export function JoinForm() {
   const [wallet, setWallet] = useState("");
@@ -12,6 +12,8 @@ export function JoinForm() {
   const [message, setMessage] = useState<string>("");
   const [isVerified, setIsVerified] = useState(false);
   const [choiceMade, setChoiceMade] = useState<string | null>(null);
+  const [playerPosition, setPlayerPosition] = useState<number | null>(null);
+  const [winCondition, setWinCondition] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -22,6 +24,8 @@ export function JoinForm() {
     setIsVerified(false);
     setEligible(null);
     setChoiceMade(null);
+    setPlayerPosition(null);
+    setWinCondition(null);
     setMessage("");
   }, [wallet]);
 
@@ -53,7 +57,7 @@ export function JoinForm() {
         signal: abortControllerRef.current.signal,
       });
       
-      if (res.aborted) return;
+      if (abortControllerRef.current?.signal.aborted) return;
       
       const json: VerifyResponse = await res.json();
       if (!json.ok || json.eligible === false) {
@@ -93,7 +97,12 @@ export function JoinForm() {
         return;
       }
       setChoiceMade(side);
-      setMessage(`Choice saved: ${side}! You're in the round!`);
+      setPlayerPosition(json.position);
+      setWinCondition(json.winCondition);
+      
+      const positionText = json.position ? `Position #${json.position}` : "";
+      const winText = json.winCondition ? `Vinder hvis ${json.winCondition}` : "";
+      setMessage(`${side} valgt! ${positionText} - ${winText}`);
     } catch (e) {
       setMessage("Something went wrong. Try again.");
     } finally {
@@ -116,6 +125,15 @@ export function JoinForm() {
   return (
     <div className="w-full max-w-md mx-auto animate-fade-in">
       <div className="flex flex-col gap-4">
+        <div className="bg-pump-black-light border border-gray-600 rounded-xl p-4 mb-4">
+          <h3 className="text-pump-green font-bold mb-2">🎲 Nye Spil Regler!</h3>
+          <div className="text-sm text-gray-300 space-y-1">
+            <p>• <span className="text-pump-green">Position 1-50:</span> Vinder hvis <span className="font-bold text-white">HEADS</span></p>
+            <p>• <span className="text-pump-green">Position 51-100:</span> Vinder hvis <span className="font-bold text-white">TAILS</span></p>
+            <p className="text-xs text-gray-400 mt-2">Først til mølle princip - max 100 spillere!</p>
+          </div>
+        </div>
+        
         <div className="flex gap-3">
           <div className="relative flex-1">
             <input

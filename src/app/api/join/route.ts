@@ -56,14 +56,59 @@ export async function POST(req: Request) {
 
   const round = await getOrCreateCurrentRound();
 
-  // Upsert choice for this round
-  await prisma.choice.upsert({
-    where: { walletId_roundId: { walletId: wallet.id, roundId: round.id } },
-    update: { side: payload.side as any },
-    create: { walletId: wallet.id, roundId: round.id, side: payload.side as any }
+  // Check if player already has a choice in this round
+  const existingChoice = await prisma.choice.findUnique({
+    where: { walletId_roundId: { walletId: wallet.id, roundId: round.id } }
   });
 
-  return NextResponse.json({ ok: true, roundIndex: round.index, endsAt: round.endsAt });
+  let position: number;
+  
+  if (existingChoice) {
+    // Player is updating their choice, keep same position
+    position = existingChoice.position;
+    await prisma.choice.update({
+      where: { walletId_roundId: { walletId: wallet.id, roundId: round.id } },
+      data: { side: payload.side as any }
+    });
+  } else {
+    // New player - assign next available position (1-100)
+    const currentChoices = await prisma.choice.findMany({
+      where: { roundId: round.id },
+      orderBy: { position: 'asc' }
+    });
+
+    // Find next available position (1-100)
+    position = 1;
+    for (const choice of currentChoices) {
+      if (choice.position === position) {
+        position++;
+      } else {
+        break;
+      }
+    }
+
+    // Max 100 players per round
+    if (position > 100) {
+      return NextResponse.json({ ok: false, error: 'Runde er fuld (max 100 spillere)' }, { status: 400 });
+    }
+
+    await prisma.choice.create({
+      data: {
+        walletId: wallet.id,
+        roundId: round.id,
+        side: payload.side as any,
+        position
+      }
+    });
+  }
+
+  return NextResponse.json({ 
+    ok: true, 
+    roundIndex: round.index, 
+    endsAt: round.endsAt,
+    position,
+    winCondition: position <= 50 ? 'HEADS' : 'TAILS'
+  });
 }
 
 
