@@ -1,26 +1,100 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #374151;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+}
+
+html, body, #__next {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  font-family: system-ui, -apple-system, sans-serif;
 }
+
+/* Smooth loading spinner */
+@keyframes spin-smooth {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-smooth {
+  animation: spin-smooth 1s linear infinite;
+}
+
+/* Smooth fade in */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Smooth scale */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+/* Smooth bounce */
+@keyframes bounce-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 1s ease-in-out infinite;
+}
+
+/* Glow effect */
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.3); }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Slide in from bottom */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out;
+}
+
+/* Smooth typing effect */
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.animate-typing {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 2s steps(40, end);
+}
+
+

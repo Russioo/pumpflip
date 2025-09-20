@@ -1,7 +1,4 @@
-import type { NextConfig } from "next";
+// Flyttet til next.config.mjs (Next.js understøtter ikke TypeScript i config)
+export {};
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
 
-export default nextConfig;

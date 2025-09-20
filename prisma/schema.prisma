@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  address   String   @unique
+  createdAt DateTime @default(now())
+  choices   Choice[]
+  rewards   Reward[]
+}
+
+model Round {
+  id            String    @id @default(cuid())
+  index         Int       @unique // sequential round number
+  startedAt     DateTime
+  endsAt        DateTime
+  result        String?
+  feePool       Float
+  choices       Choice[]
+  rewards       Reward[]
+  createdAt     DateTime  @default(now())
+}
+
+model Choice {
+  id        String   @id @default(cuid())
+  walletId  String
+  roundId   String
+  side      String
+  createdAt DateTime @default(now())
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  round     Round    @relation(fields: [roundId], references: [id])
+
+  @@unique([walletId, roundId])
+}
+
+model Reward {
+  id        String   @id @default(cuid())
+  walletId  String
+  roundId   String
+  amount    Float
+  claimed   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  round     Round    @relation(fields: [roundId], references: [id])
+
+  @@unique([walletId, roundId])
+}
+
+
+
